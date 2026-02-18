@@ -16,7 +16,6 @@ cleanup() {
 
 trap cleanup SIGINT
 
-
 read -p "Enter project name: " USER_INPUT
 
 if [ -z "$USER_INPUT" ]; then
@@ -24,10 +23,9 @@ if [ -z "$USER_INPUT" ]; then
     exit 1
 fi
 
-PROJECT_DIR="attendance_tracker_v1${USER_INPUT}"
+PROJECT_DIR="attendance_tracker_v1_${USER_INPUT}"
 
 echo "Creating project: $PROJECT_DIR"
-
 
 mkdir -p "$PROJECT_DIR/Helpers"
 mkdir -p "$PROJECT_DIR/reports"
@@ -37,14 +35,16 @@ touch "$PROJECT_DIR/Helpers/assets.csv"
 touch "$PROJECT_DIR/Helpers/config.json"
 touch "$PROJECT_DIR/reports/reports.log"
 
-
 cat <<EOF > "$PROJECT_DIR/Helpers/config.json"
 {
-    "warning_threshold": 75,
-    "failure_threshold": 50
+    "total_sessions": 15,
+    "run_mode": "live",
+    "thresholds": {
+        "warning": 75,
+        "failure": 50
+    }
 }
 EOF
-
 
 read -p "Do you want to update attendance thresholds? (yes/no): " UPDATE_CHOICE
 
@@ -52,8 +52,9 @@ if [[ "$UPDATE_CHOICE" == "yes" ]]; then
     read -p "Enter Warning Threshold (%): " NEW_WARNING
     read -p "Enter Failure Threshold (%): " NEW_FAILURE
 
-    sed -i "s/\"warning_threshold\": 75/\"warning_threshold\": $NEW_WARNING/" "$PROJECT_DIR/Helpers/config.json"
-    sed -i "s/\"failure_threshold\": 50/\"failure_threshold\": $NEW_FAILURE/" "$PROJECT_DIR/Helpers/config.json"
+    sed -i.bak "s/\"warning\": 75/\"warning\": $NEW_WARNING/" "$PROJECT_DIR/Helpers/config.json"
+    sed -i.bak "s/\"failure\": 50/\"failure\": $NEW_FAILURE/" "$PROJECT_DIR/Helpers/config.json"
+    rm "$PROJECT_DIR/Helpers/config.json.bak"
 
     echo "Thresholds updated successfully."
 else
@@ -67,7 +68,6 @@ if python3 --version &> /dev/null; then
 else
     echo "⚠️  Warning: Python3 is NOT installed on this system."
 fi
-
 
 cat <<'EOF' > "$PROJECT_DIR/attendance_checker.py"
 import csv
@@ -126,34 +126,21 @@ def run_attendance_check():
 
 if __name__ == "__main__":
     run_attendance_check()
-
+EOF
 
 cat <<'EOF' > "$PROJECT_DIR/Helpers/assets.csv"
-
-Email Names Attendance Count Absence Count
-alice@example.com Alice Johnson 14 1
-bob@example.com Bob Smith 7 8
-charlie@example.com Charlie Davis 4 11
-diana@example.com Diana Prince 15 0
-
-
-
+Email,Names,Attendance Count,Absence Count
+alice@example.com,Alice Johnson,14,1
+bob@example.com,Bob Smith,7,8
+charlie@example.com,Charlie Davis,4,11
+diana@example.com,Diana Prince,15,0
 EOF
-
 
 cat <<'EOF' > "$PROJECT_DIR/reports/reports.log"
-
 --- Attendance Report Run: 2026-02-06 18:10:01.468726 ---
-[2026-02-06 18:10:01.469363] ALERT SENT TO bob@example.com: URGENT: Bob Smith, your
-attendance is 46.7%. You will fail this class.
-[2026-02-06 18:10:01.469424] ALERT SENT TO charlie@example.com: URGENT: Charlie
-Davis, your attendance is 26.7%. You will fail this class.
-
-
-
+[2026-02-06 18:10:01.469363] ALERT SENT TO bob@example.com: URGENT: Bob Smith, your attendance is 46.7%. You will fail this class.
+[2026-02-06 18:10:01.469424] ALERT SENT TO charlie@example.com: URGENT: Charlie Davis, your attendance is 26.7%. You will fail this class.
 EOF
-
 
 echo "Project setup completed successfully!"
 echo "Structure created under: $PROJECT_DIR"
-
