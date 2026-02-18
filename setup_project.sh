@@ -23,7 +23,7 @@ if [ -z "$USER_INPUT" ]; then
     exit 1
 fi
 
-PROJECT_DIR="attendance_tracker_v1_${USER_INPUT}"
+PROJECT_DIR="attendance_tracker_${USER_INPUT}"
 
 echo "Creating project: $PROJECT_DIR"
 
