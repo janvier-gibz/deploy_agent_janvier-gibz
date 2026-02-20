@@ -13,7 +13,7 @@ CSV data processing
 Logging and conditional alerts in Python
 
 How the System Works
-1️⃣ Setup Phase (Bash Script)
+Setup Phase (Bash Script)
 
 When you run the Bash script.
 It asks for a project name.
